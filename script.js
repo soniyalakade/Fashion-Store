@@ -80,9 +80,6 @@ function addToCart(product) {
   updateCartCount();
 }
 
-
-
-
 // Update cart count
 function updateCartCount() {
   const cartCountEl = document.getElementById("cart-count");
@@ -100,6 +97,18 @@ function updateCartCount() {
   cartCountEl.innerText = cart.length;
 }
 
-
 // Load cart count on page load
 updateCartCount();
+
+// HERO SLIDER AUTO CHANGE
+const slides = document.querySelectorAll(".hero-slide");
+let currentSlide = 0;
+
+function changeSlide() {
+  slides[currentSlide].classList.remove("active");
+  currentSlide = (currentSlide + 1) % slides.length;
+  slides[currentSlide].classList.add("active");
+}
+
+// Change every 4 seconds
+setInterval(changeSlide, 4000);

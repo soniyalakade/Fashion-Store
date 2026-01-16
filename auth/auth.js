@@ -1,6 +1,5 @@
-// ================= REGISTER =================
+// REGISTER
 const registerForm = document.getElementById("registerForm");
-
 if (registerForm) {
   registerForm.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -17,9 +16,8 @@ if (registerForm) {
   });
 }
 
-// ================= LOGIN =================
+// LOGIN
 const loginForm = document.getElementById("loginForm");
-
 if (loginForm) {
   loginForm.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -33,10 +31,8 @@ if (loginForm) {
       savedUser.email === email &&
       savedUser.password === password
     ) {
-      // ✅ STORE LOGIN STATE + USER NAME
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("userName", savedUser.name);
-
       alert("Login successful!");
       window.location.href = "../index.html";
     } else {

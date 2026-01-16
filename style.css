@@ -64,7 +64,7 @@ body {
 
 /* ================= HERO ================= */
 .hero {
-  height: 60vh;
+  height: 90vh;
   background:
     linear-gradient(120deg, rgba(127,0,255,0.6), rgba(255,77,109,0.6)),
     url("https://source.unsplash.com/1600x800/?fashion,model");
@@ -80,10 +80,45 @@ body {
 .hero h1 {
   animation: slideDown 1s ease;
   text-shadow: 3px 3px 12px rgba(0,0,0,0.8);
+  height: 45vh;
 }
 
 .hero p {
   animation: fadeIn 1.8s ease;
+}
+
+.hero-slider {
+  position: relative;
+  height: 65vh;
+  overflow: hidden;
+}
+
+/* Slides */
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1.2s ease-in-out;
+}
+
+/* Active slide */
+.hero-slide.active {
+  opacity: 1;
+}
+
+/* Text content */
+.hero-content {
+  padding-top: 80px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Fix text shadow */
+.hero-content h1,
+.hero-content p {
+  text-shadow: 2px 2px 12px rgba(0,0,0,0.8);
 }
 
 /* Animations */
