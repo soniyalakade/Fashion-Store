@@ -34,7 +34,7 @@ const products = [
 
 // Get category from URL
 const params = new URLSearchParams(window.location.search);
-const categoryType = params.get("type");
+const categoryType = params.get("type") || "all";
 
 // Update category title
 document.getElementById("category-title").innerText = categoryType + " Collection";
@@ -42,62 +42,60 @@ document.getElementById("category-title").innerText = categoryType + " Collectio
 // Container
 const container = document.getElementById("category-products");
 
-// Cart from localStorage
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
 // Filter products by category
 const filteredProducts = products.filter(p => p.category === categoryType);
 
-// Render products
+// Render products dynamically
 filteredProducts.forEach(product => {
-  container.innerHTML += `
-    <div class="col-md-4 mb-4">
-      <div class="card h-100 shadow">
-        <img src="${product.img}" class="card-img-top" alt="${product.name}">
-        <div class="card-body d-flex flex-column">
-          <h5 class="card-title">${product.name}</h5>
-          <p class="card-text">₹${(product.price).toFixed(0)}</p>
-          <button class="btn btn-primary mt-auto w-100" onclick='addToCart(${JSON.stringify(product)})'>
-            Add to Cart
-          </button>
-        </div>
+  const col = document.createElement("div");
+  col.className = "col-md-4 mb-4";
+  col.innerHTML = `
+    <div class="card h-100 shadow">
+      <img src="${product.img}" class="card-img-top" alt="${product.name}">
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title">${product.name}</h5>
+        <p class="card-text">₹${product.price.toFixed(0)}</p>
+        <button class="btn btn-primary mt-auto w-100 add-cart-btn">
+          Add to Cart
+        </button>
       </div>
     </div>
   `;
+  container.appendChild(col);
+
+  // Attach click listener
+  col.querySelector(".add-cart-btn").addEventListener("click", () => addToCart(product));
 });
 
 // Add to Cart function
 function addToCart(product) {
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const userId = localStorage.getItem("userId");
 
-  if (!isLoggedIn) {
+  if (!isLoggedIn || !userId) {
     alert("Please login to add items to cart");
-    window.location.href = "auth/login.html";
+    window.location.href = "/auth/login.html";
     return;
   }
 
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
-  cart.push(product);
-  localStorage.setItem("cart", JSON.stringify(cart));
-  updateCartCount();
-}
+  let cart = JSON.parse(localStorage.getItem(`cart_${userId}`)) || [];
 
-// Update cart badge
-function updateCartCount() {
-  const cartCountEl = document.getElementById("cart-count");
-
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-
-  if (!cartCountEl) return;
-
-  if (!isLoggedIn) {
-    cartCountEl.innerText = "0";
-    return;
+  // Check if product already in cart
+  const existing = cart.find(p => p.id === product.id);
+  if (existing) {
+    existing.quantity = (existing.quantity || 1) + 1; // increment quantity
+  } else {
+    product.quantity = 1;
+    cart.push(product);
   }
 
-  const cart = JSON.parse(localStorage.getItem("cart")) || [];
-  cartCountEl.innerText = cart.length;
+  localStorage.setItem(`cart_${userId}`, JSON.stringify(cart));
+
+  // Update navbar cart count
+  if (typeof updateCartCount === "function") updateCartCount();
+
+  alert(`${product.name} added to cart`);
 }
 
-
-updateCartCount();
+// Call once to update cart badge on page load
+if (typeof updateCartCount === "function") updateCartCount();

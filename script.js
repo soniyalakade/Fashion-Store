@@ -32,83 +32,141 @@ const products = [
   }
 ];
 
-// DOM
+/*******************************
+ * DOM ELEMENTS
+ *******************************/
 const productList = document.getElementById("product-list");
 
-// Get cart from localStorage or initialize
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-// Render products
-products.forEach((product) => {
-  const productCard = document.createElement("div");
-  productCard.className = "col-md-4 mb-4";
+/*******************************
+ * RENDER PRODUCTS
+ *******************************/
+function renderProducts() {
+  if (!productList) return;
 
-  productCard.innerHTML = `
-  <div class="card h-100 shadow-sm">
-    <div class="product-img-box">
-      <img src="${product.img}" alt="${product.name}">
-    </div>
-    <div class="card-body d-flex flex-column">
-      <h5 class="card-title">${product.name}</h5>
-      <p class="card-text">₹${product.price.toFixed(2)}</p>
-      <button class="btn btn-primary mt-auto"
-        onclick='addToCart(${JSON.stringify(product)})'>
-        Add to Cart
-      </button>
-    </div>
-  </div>
-`;
+  productList.innerHTML = "";
 
-  productList.appendChild(productCard);
-});
+  products.forEach(product => {
+    const col = document.createElement("div");
+    col.className = "col-md-4 mb-4";
 
-// Add to cart
+    col.innerHTML = `
+      <div class="card h-100 shadow-sm">
+        <div class="product-img-box">
+          <img src="${product.img}" alt="${product.name}">
+        </div>
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">${product.name}</h5>
+          <p class="card-text">₹${product.price}</p>
+          <button 
+            class="btn btn-primary mt-auto add-to-cart"
+            data-id="${product.id}">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    `;
+
+    productList.appendChild(col);
+  });
+
+  attachAddToCartEvents();
+}
+
+
+/*******************************
+ * ADD TO CART (USER BASED)
+ *******************************/
 function addToCart(product) {
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const userId = localStorage.getItem("userId");
 
-  if (!isLoggedIn) {
+  if (!isLoggedIn || !userId) {
     alert("Please login to add items to cart");
     window.location.href = "/auth/login.html";
     return;
   }
 
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
-  cart.push(product);
-  localStorage.setItem("cart", JSON.stringify(cart));
+  let cart = JSON.parse(localStorage.getItem(`cart_${userId}`)) || [];
 
+  const existingItem = cart.find(item => item.id === product.id);
+
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    cart.push({
+      ...product,
+      quantity: 1
+    });
+  }
+
+  localStorage.setItem(`cart_${userId}`, JSON.stringify(cart));
+
+  window.dispatchEvent(new Event("cartUpdated"));
+
+  if (window.updateNavbarCartCount) {
+    window.updateNavbarCartCount();
+  }
+
+if (typeof updateNavbarCartCount === "function") {
+  updateNavbarCartCount();
+}
   alert("Item added to cart");
-  updateCartCount();
 }
 
-// Update cart count
+
+/*******************************
+ * ADD BUTTON EVENT LISTENERS
+ *******************************/
+function attachAddToCartEvents() {
+  document.querySelectorAll(".add-to-cart").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const productId = Number(btn.dataset.id);
+      const product = products.find(p => p.id === productId);
+      if (product) addToCart(product);
+    });
+  });
+}
+
+
+/*******************************
+ * UPDATE CART COUNT (NAVBAR)
+ *******************************/
 function updateCartCount() {
   const cartCountEl = document.getElementById("cart-count");
-
+  const userId = localStorage.getItem("userId");
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
 
-  if (!cartCountEl) return;
-
-  if (!isLoggedIn) {
-    cartCountEl.innerText = "0";
+  if (!cartCountEl || !isLoggedIn || !userId) {
+    if (cartCountEl) cartCountEl.innerText = "0";
     return;
   }
 
-  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+  const cart = JSON.parse(localStorage.getItem(`cart_${userId}`)) || [];
   cartCountEl.innerText = cart.length;
 }
 
-// Load cart count on page load
-updateCartCount();
 
-// HERO SLIDER AUTO CHANGE
+/*******************************
+ * HERO SLIDER
+ *******************************/
 const slides = document.querySelectorAll(".hero-slide");
 let currentSlide = 0;
 
 function changeSlide() {
+  if (slides.length === 0) return;
+
   slides[currentSlide].classList.remove("active");
   currentSlide = (currentSlide + 1) % slides.length;
   slides[currentSlide].classList.add("active");
 }
 
-// Change every 4 seconds
 setInterval(changeSlide, 4000);
+
+
+/*******************************
+ * INIT
+ *******************************/
+renderProducts();
+updateCartCount();
+

@@ -12,8 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
           FashionStore
         </a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-          data-bs-target="#navbarNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
           <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -27,31 +26,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <!-- CATEGORIES -->
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button"
-                data-bs-toggle="dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                 Categories
               </a>
               <ul class="dropdown-menu">
-                <li>
-                  <a class="dropdown-item" href="/category.html?type=women">
-                    Women
-                  </a>
-                </li>
-                <li>
-                  <a class="dropdown-item" href="/category.html?type=men">
-                    Men
-                  </a>
-                </li>
-                <li>
-                  <a class="dropdown-item" href="/category.html?type=footwear">
-                    Footwear
-                  </a>
-                </li>
-                <li>
-                  <a class="dropdown-item" href="/category.html?type=accessories">
-                    Accessories
-                  </a>
-                </li>
+                <li><a class="dropdown-item" href="/category.html?type=women">Women</a></li>
+                <li><a class="dropdown-item" href="/category.html?type=men">Men</a></li>
+                <li><a class="dropdown-item" href="/category.html?type=footwear">Footwear</a></li>
+                <li><a class="dropdown-item" href="/category.html?type=accessories">Accessories</a></li>
               </ul>
             </li>
 
@@ -65,36 +47,25 @@ document.addEventListener("DOMContentLoaded", () => {
             ${
               isLoggedIn
                 ? `
-                <!-- PROFILE -->
+                <!-- USER DROPDOWN -->
                 <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#" role="button"
-                    data-bs-toggle="dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                     👤 ${userName}
                   </a>
                   <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                      <span class="dropdown-item-text fw-bold">
-                        Hello, ${userName}
-                      </span>
-                    </li>
+                    <li><span class="dropdown-item-text fw-bold">Hello, ${userName}</span></li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                      <button class="dropdown-item text-danger" id="logoutBtn">
-                        Logout
-                      </button>
+                      <button class="dropdown-item text-danger" id="logoutBtn">Logout</button>
                     </li>
                   </ul>
                 </li>
-              `
+                `
                 : `
-                <!-- AUTH -->
-                <li class="nav-item">
-                  <a class="nav-link" href="/auth/login.html">Login</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="/auth/register.html">Sign Up</a>
-                </li>
-              `
+                <!-- LOGIN & SIGNUP -->
+                <li class="nav-item"><a class="nav-link" href="/auth/login.html">Login</a></li>
+                <li class="nav-item"><a class="nav-link" href="/auth/register.html">Sign Up</a></li>
+                `
             }
 
           </ul>
@@ -107,25 +78,35 @@ document.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
+      // Reuse auth.js logout logic
       localStorage.removeItem("isLoggedIn");
       localStorage.removeItem("userName");
+      localStorage.removeItem("userId");
       localStorage.removeItem("cart");
+
+      alert("Logged out successfully!");
       window.location.href = "/index.html";
     });
   }
 
-  updateCartCount();
+  updateNavbarCartCount();
 });
 
-function updateCartCount() {
-  const countEl = document.getElementById("cart-count");
+function updateNavbarCartCount() {
+  const cartCountEl = document.getElementById("cart-count");
+  const userId = localStorage.getItem("userId");
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
 
-  if (!isLoggedIn) {
-    countEl.innerText = "0";
+  if (!cartCountEl || !isLoggedIn || !userId) {
+    if (cartCountEl) cartCountEl.innerText = "0";
     return;
   }
 
-  const cart = JSON.parse(localStorage.getItem("cart")) || [];
-  countEl.innerText = cart.length;
+  const cart = JSON.parse(localStorage.getItem(`cart_${userId}`)) || [];
+  cartCountEl.innerText = cart.length;
 }
+
+/* 🔥 AUTO-SYNC CART COUNT (REAL FIX) */
+setInterval(() => {
+  updateNavbarCartCount();
+}, 300);
